@@ -1,0 +1,63 @@
+# Crossplane resources to provision a zonal GKE cluster with a 3-node pool via
+# provider-gcp-container (upbound family).
+# Apply from the terraform/-provisioned GKE cluster with:
+#   kubectl apply -f gke-cluster-crossplane.yaml
+#
+# Prerequisites (see crossplane_gke_cluster_setup.md):
+#   - provider-family-gcp + provider-gcp-container v3.0.0 installed
+#   - a ProviderConfig named "default-gcp-container" (source: InjectedIdentity)
+#
+# NOTE: provider-gcp-container v3.0.0 serves container.gcp.upbound.io/v1beta2, not
+# v1beta1 — check `kubectl get crd clusters.container.gcp.upbound.io -o
+# jsonpath='{.spec.versions[*].name}'` if a future provider version changes this
+# again. v1beta2 also flattened the old single-element-list-wrapped blocks
+# (ipAllocationPolicy, nodeConfig, management, clusterSelector, etc.) into plain
+# objects — no more `- {...}` list wrapping like the Compute provider still uses.
+#
+# Uses the project's default VPC/subnet (no networkSelector) — simplest option, but
+# depends on the default network existing and not being firewalled off from GKE's
+# needs. Zonal (single-zone) control plane + node pool, not regional.
+
+apiVersion: container.gcp.upbound.io/v1beta2
+kind: Cluster
+metadata:
+  name: demo-gke-cluster
+  labels:
+    app: demo-gke
+spec:
+  forProvider:
+    location: us-central1-a
+    initialNodeCount: 1
+    removeDefaultNodePool: true
+    network: default
+    ipAllocationPolicy: {} # VPC-native, auto-assigned secondary ranges on the default network
+    deletionProtection: false
+  providerConfigRef:
+    name: default-gcp-container
+---
+apiVersion: container.gcp.upbound.io/v1beta2
+kind: NodePool
+metadata:
+  name: demo-gke-cluster-nodes
+  labels:
+    app: demo-gke
+spec:
+  forProvider:
+    location: us-central1-a
+    clusterSelector:
+      matchLabels:
+        app: demo-gke
+    nodeCount: 3
+    # No nodeConfig block: provider-gcp-container v3.0.0 panics ("value is null",
+    # inside terraform-provider-google's expandNodeConfig) whenever this resource's
+    # nodeConfig is set at all, regardless of contents — looks like a bug in how
+    # upjet round-trips one of its nested singleton-object sub-fields (e.g.
+    # shieldedInstanceConfig / workloadMetadataConfig) back to cty when they're
+    # absent. Omitting nodeConfig entirely sidesteps that code path; GKE defaults an
+    # unset node pool to machineType e2-medium anyway, which is what we want here
+    # (and is what this sandbox project's org policy whitelists).
+    management:
+      autoRepair: true
+      autoUpgrade: true
+  providerConfigRef:
+    name: default-gcp-container
