@@ -88,6 +88,10 @@ spec:
   providerConfigRef:
     name: default-gcp
 ---
+# Free tier: GCP's always-free Compute Engine allowance is exactly 1 non-preemptible
+# e2-micro instance/month, only in us-central1/us-west1/us-east1 (we're already in
+# us-central1), plus 30GB-months standard PD and 1GB egress to US destinations.
+# e2-small does not qualify — only e2-micro does — and it's 1 instance, not 2.
 apiVersion: compute.gcp.upbound.io/v1beta1
 kind: Instance
 metadata:
@@ -97,38 +101,13 @@ metadata:
 spec:
   forProvider:
     zone: us-central1-a
-    machineType: e2-small
+    machineType: e2-micro
     tags:
       - demo-gcp
     bootDisk:
       - initializeParams:
           - image: debian-cloud/debian-12
-    networkInterface:
-      - subnetworkSelector:
-          matchLabels:
-            app: demo-gcp
-        accessConfig:
-          - {} # ephemeral external IP
-    metadata:
-      ssh-keys: "ermin:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDQ20/IsvAwoQSP+/RrG3bo4xQntSd6MK5yO+A/cf4jHTeYAi+S78vrMTGWJ+9gsaO8wbnVLKqIZlJ61HMipmTNHD47d93bmdlY9pPy9GOtbHCzULoNegX0VV/h917GOrdSF2W1ouxbQlFcZEDD5nz/l9M4vUC2ld4H+LYSkuWC4SOVQGcpnAfnJPngILj0LM58fqN4L9Em8TTu+N6SoTBDckQYYroZ4Or6vBu2v3m4c2VsA379LZ+DKpSKas1mvFl9Ssr2qmGw720q/5XJ8DNuc2EK/oT4Fg654/45R24P0CO1eiotPN9o1CnFdTQf78qhSpkv6I5IAOXZDwww+BnjLaIE5XwYLgcSHAy6NYkz+uGPGyiFsPd7/BKnhknEkYi3qnbNF9kZjkA5Er6yp+sqTdsuXBAIumIlatssJzGvm0CA7rLoK5JQtKgBiENgnlAFogi9e6eU2kGFGCHnat3HreeU7oD14aproiqON8FoSwtQ3dKfjSuusGiQqHUVJw9A9iuiC2UNpxycuXXiU+cIXy5dkga6sshcGiVMmEnFENuP7D1H9pYJe6/hKtROgzBcno706u1a/byZ764gJtDR0Y/J5RiAQalCgnh2L4SPUr1bOYvN3SzclG7C6OfkHdetUoUM0Mxpuz5IeZ5m4hJ5+Sa+ea4GVRSdTMLWWOB1Kw== ermin@Ermins-Air.attlocal.net"
-  providerConfigRef:
-    name: default-gcp
----
-apiVersion: compute.gcp.upbound.io/v1beta1
-kind: Instance
-metadata:
-  name: gce-instance-2
-  labels:
-    app: demo-gcp
-spec:
-  forProvider:
-    zone: us-central1-a
-    machineType: e2-small
-    tags:
-      - demo-gcp
-    bootDisk:
-      - initializeParams:
-          - image: debian-cloud/debian-12
+          - diskSizeGb: 30
     networkInterface:
       - subnetworkSelector:
           matchLabels:

@@ -198,6 +198,10 @@ spec:
   providerConfigRef:
     name: default
 ---
+# Free tier: AWS gives 750 hrs/month combined across free-tier-eligible instances,
+# for the account's first 12 months only. One t3.micro run 24/7 uses ~730 hrs/month —
+# right at the limit. Running two simultaneously (as this file previously did) uses
+# ~1460 hrs/month, well over. Kept to a single instance for that reason.
 apiVersion: ec2.aws.upbound.io/v1beta1
 kind: Instance
 metadata:
@@ -218,28 +222,5 @@ spec:
         app: demo
     tags:
       Name: instance-1
-  providerConfigRef:
-    name: default
----
-apiVersion: ec2.aws.upbound.io/v1beta1
-kind: Instance
-metadata:
-  name: instance-2
-  labels:
-    app: demo
-spec:
-  forProvider:
-    region: us-east-1
-    instanceType: t3.micro
-    ami: ami-07a5b367e8dc8bd92
-    keyName: demo-keypair
-    subnetIdSelector:
-      matchLabels:
-        app: demo
-    vpcSecurityGroupIdSelector:
-      matchLabels:
-        app: demo
-    tags:
-      Name: instance-2
   providerConfigRef:
     name: default

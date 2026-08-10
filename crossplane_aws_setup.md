@@ -1,7 +1,9 @@
 # Crossplane AWS EC2 Setup — RKE2 Cluster
 
-Steps performed to provision 2 EC2 instances (with VPC networking, security group,
+Steps performed to provision 1 EC2 instance (with VPC networking, security group,
 and SSH key pair) via Crossplane from the rke2 cluster, plus how to tear it all down.
+Kept to a single `t3.micro` — running two simultaneously 24/7 would exceed AWS's
+750 free hours/month (first 12 months only).
 
 Manifest: `ec2-instances-crossplane.yaml` (same directory as this file).
 
@@ -146,7 +148,7 @@ ssh -i ~/.ssh/id_rsa ec2-user@<PUBLIC-IP>
   provider will refuse the in-place update — you must delete and let Crossplane
   recreate the `Instance` resources (new instance IDs and IPs result):
   ```bash
-  kubectl delete instance.ec2.aws.upbound.io instance-1 instance-2
+  kubectl delete instance.ec2.aws.upbound.io instance-1
   kubectl apply -f ec2-instances-crossplane.yaml
   ```
 

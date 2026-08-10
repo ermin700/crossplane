@@ -47,7 +47,7 @@ spec:
     clusterSelector:
       matchLabels:
         app: demo-gke
-    nodeCount: 3
+    nodeCount: 1 # kept to 1 — GKE node compute bills beyond the single free-tier e2-micro allowance regardless of count
     # No nodeConfig block: provider-gcp-container v3.0.0 panics ("value is null",
     # inside terraform-provider-google's expandNodeConfig) whenever this resource's
     # nodeConfig is set at all, regardless of contents — looks like a bug in how

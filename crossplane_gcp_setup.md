@@ -82,9 +82,10 @@ kubectl apply -f gce-instances-crossplane.yaml
 
 This creates, in order: `Network` (custom-mode VPC) → `Subnetwork`
 (`10.10.1.0/24` in `us-central1`) → 2 `Firewall`s (SSH ingress restricted to one IP,
-all-traffic egress, both scoped to the `demo-gcp` network tag) → 2 `Instance`s
-(`e2-small`, Debian 12, with an ephemeral external IP and an SSH key injected via
-instance metadata).
+all-traffic egress, both scoped to the `demo-gcp` network tag) → 1 `Instance`
+(`e2-micro`, Debian 12, with an ephemeral external IP and an SSH key injected via
+instance metadata — kept to a single `e2-micro` since that's GCP's entire
+always-free Compute Engine allowance; anything more or larger is billed).
 
 Check status:
 

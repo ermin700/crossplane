@@ -82,7 +82,9 @@ kubectl apply -f gke-cluster-crossplane.yaml
 This creates, in order: `Cluster` (zonal, `us-central1-a`, default VPC-native
 networking on the project's default network, `initialNodeCount: 1` then
 `removeDefaultNodePool: true` so the default pool is torn down) → `NodePool`
-(3 × `e2-medium`, `pd-standard` 50GB disks, auto-repair + auto-upgrade).
+(1 × `e2-medium`, `pd-standard` disks, auto-repair + auto-upgrade — kept to 1 node
+since GKE node compute bills beyond the account's single free-tier e2-micro
+allowance regardless of machine type or count).
 
 GKE cluster creation takes several minutes. Check status:
 

@@ -9,6 +9,12 @@ variable "region" {
   default     = "us-central1"
 }
 
+variable "zone" {
+  description = "GCP zone for the (zonal, single-node) GKE cluster — keep in an always-free-eligible region (us-central1/us-west1/us-east1) to minimize cost"
+  type        = string
+  default     = "us-central1-a"
+}
+
 variable "cluster_name" {
   description = "GKE cluster name"
   type        = string
@@ -22,21 +28,15 @@ variable "environment" {
 }
 
 variable "min_node_count" {
-  description = "Minimum nodes per zone (cluster autoscaler lower bound)"
+  description = "Node pool size, fixed at 1 (no autoscaling) to minimize cost"
   type        = number
   default     = 1
 }
 
-variable "max_node_count" {
-  description = "Maximum nodes per zone (cluster autoscaler upper bound)"
-  type        = number
-  default     = 5
-}
-
 variable "machine_type" {
-  description = "GCE machine type for cluster nodes"
+  description = "GCE machine type for cluster nodes — e2-small is the practical minimum that reliably runs GKE system pods + Crossplane; e2-micro (the free-tier-eligible shape) is too memory-constrained for a GKE node in practice"
   type        = string
-  default     = "e2-standard-4"
+  default     = "e2-small"
 }
 
 variable "subnet_cidr" {

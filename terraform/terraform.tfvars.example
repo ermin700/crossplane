@@ -1,8 +1,8 @@
 project_id             = "TODO_YOUR_GCP_PROJECT_ID"
 region                 = "us-central1"
+zone                   = "us-central1-a"
 cluster_name           = "crossplane-control-plane"
 environment            = "prod"
 min_node_count         = 1
-max_node_count         = 5
-machine_type           = "e2-standard-4"
+machine_type           = "e2-small"
 terraform_state_bucket = "TODO_UNIQUE_BUCKET_NAME_tfstate"

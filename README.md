@@ -30,14 +30,11 @@ flowchart TD
         subgraph NET["Networking"]
             vpc["VPC\n(custom mode)"]
             subnet["Subnet\n10.0.0.0/24\nPods: 10.1.0.0/16\nServices: 10.2.0.0/20"]
-            router["Cloud Router"]
-            nat["Cloud NAT\n(auto IP)"]
             vpc --> subnet
-            subnet --> router --> nat
         end
 
-        subgraph CLUSTER["GKE Cluster — Private / VPC-native"]
-            nodepool["Node Pool\ndefault Compute Engine SA\nauto-repair + auto-upgrade"]
+        subgraph CLUSTER["GKE Cluster — Zonal, public nodes, 1 node, VPC-native"]
+            nodepool["Node Pool (1x e2-small)\ndefault Compute Engine SA\nauto-repair + auto-upgrade"]
 
             subgraph K8S["crossplane-system (Helm)"]
                 pod["Crossplane Pod"]
@@ -75,7 +72,8 @@ flowchart TD
 
 | Decision | Rationale |
 |---|---|
-| Private nodes + Cloud NAT | Nodes have no public IPs; NAT provides outbound internet access for image pulls |
+| Public nodes, no Cloud NAT | Cloud NAT has no free tier (hourly + per-GB billing regardless of usage); public nodes trade away that defense-in-depth layer to avoid a guaranteed recurring cost |
+| Zonal cluster, 1 node, no autoscaling | Kept to the minimum node footprint — GKE node compute bills beyond the account's single free-tier e2-micro allowance regardless of machine type or count |
 | VPC-native (alias IPs) | Required for Private Google Access and better network performance |
 | Ambient node credentials, not Workload Identity | This sandbox project blocks all `setIamPolicy` calls — see the callout above |
 | Separate node pool | Allows independent scaling and config from the GKE control plane |
@@ -150,8 +148,11 @@ cp terraform.tfvars.example terraform.tfvars
 If your project has org-policy machine-type restrictions (common in training
 sandboxes — check for a `customConstraints/custom.machineTypeWhitelist`-style policy
 if `google_container_node_pool` creation fails with a generic `ERROR` state), set
-`machine_type` to whatever's actually allowed. `e2-medium` is GKE's own default and
-was the safe choice in the sandbox this was built against.
+`machine_type` to whatever's actually allowed. This config defaults to `e2-small`
+(smallest machine type that reliably runs GKE system pods + Crossplane) to minimize
+cost — it's still billed, since only `e2-micro` falls under GCP's always-free
+allowance and GKE nodes need more headroom than that in practice. If your sandbox
+whitelists a specific type instead (e.g. `e2-medium`, GKE's own default), use that.
 
 ### 3. Plan and apply
 
@@ -212,12 +213,12 @@ block is set at all — omit it entirely and let GKE default the machine type) i
 | Name | Description | Default |
 |---|---|---|
 | `project_id` | GCP project ID | — (required) |
-| `region` | GCP region | `us-central1` |
+| `region` | GCP region (used for the state bucket) | `us-central1` |
+| `zone` | GCP zone for the zonal GKE cluster | `us-central1-a` |
 | `cluster_name` | GKE cluster name | `crossplane-control-plane` |
 | `environment` | Environment label on nodes | `prod` |
-| `min_node_count` | Minimum nodes per zone (autoscaler lower bound) | `1` |
-| `max_node_count` | Maximum nodes per zone (autoscaler upper bound) | `5` |
-| `machine_type` | Node machine type | `e2-standard-4` |
+| `min_node_count` | Node pool size, fixed at 1 (no autoscaling) | `1` |
+| `machine_type` | Node machine type | `e2-small` |
 | `subnet_cidr` | Primary subnet CIDR | `10.0.0.0/24` |
 | `pods_cidr` | Secondary range for pods | `10.1.0.0/16` |
 | `services_cidr` | Secondary range for services | `10.2.0.0/20` |
