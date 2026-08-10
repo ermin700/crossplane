@@ -139,10 +139,10 @@ ssh -i ~/.ssh/id_rsa ec2-user@<PUBLIC-IP>
   ```bash
   aws ssm get-parameters --names /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 --region us-east-1 --query 'Parameters[0].Value' --output text
   ```
-- **SSH ingress CIDR**: locked to a single IP (`23.124.147.21/32`, detected via
-  `curl -s https://ifconfig.me`) in the manifest's `demo-sg-rule-ssh-ingress`
-  resource. If your public IP changes, update that CIDR and re-apply, or you'll be
-  locked out.
+- **SSH ingress CIDR**: locked to a single IP, set as `YOUR_PUBLIC_IP/32` in the
+  manifest's `demo-sg-rule-ssh-ingress` resource — fill in your own before applying
+  (e.g. `curl -s https://ifconfig.me`). If your public IP changes, update that CIDR
+  and re-apply, or you'll be locked out.
 - **Key pair is launch-only**: AWS does not allow attaching/changing a key pair on
   an already-running instance. If you ever change `keyName` in the manifest, the
   provider will refuse the in-place update — you must delete and let Crossplane

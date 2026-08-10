@@ -119,9 +119,10 @@ ssh -i ~/.ssh/id_rsa ermin@<EXTERNAL-IP>
   no other option and there's nothing sensitive on this project.
 - **Image**: `debian-cloud/debian-12` is the public Debian 12 image family — GCP
   always resolves it to the latest image in that family at create time.
-- **SSH ingress CIDR**: locked to a single IP (`23.124.147.21/32`) in the manifest's
-  `demo-gcp-fw-ssh-ingress` resource. If your public IP changes, update that CIDR and
-  re-apply, or you'll be locked out.
+- **SSH ingress CIDR**: locked to a single IP, set as `YOUR_PUBLIC_IP/32` in the
+  manifest's `demo-gcp-fw-ssh-ingress` resource — fill in your own before applying
+  (e.g. `curl -s https://ifconfig.me`). If your public IP changes, update that CIDR
+  and re-apply, or you'll be locked out.
 - **`projectID` on the ProviderConfig**: GCP resources in this manifest don't take a
   per-resource project field — they inherit it from `ProviderConfig.spec.projectID`.
 - **Both `bootDisk` and `accessConfig` are lists** (mirroring the underlying
