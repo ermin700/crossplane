@@ -155,7 +155,7 @@ spec:
     toPort: 22
     protocol: tcp
     cidrBlocks:
-      - 23.124.147.21/32 # your current public IP (detected via ifconfig.me) — update if it changes
+      - YOUR_PUBLIC_IP/32 # replace with your current public IP (e.g. `curl -s https://ifconfig.me`) before applying
     securityGroupIdSelector:
       matchLabels:
         app: demo
